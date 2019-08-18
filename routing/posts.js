@@ -20,7 +20,7 @@ module.exports = function (dirname) {
             var saltLines = fs.readFileSync("./config/salt.txt", "utf-8").split(/\n/g);
             var salt = saltLines[saltVal];
             var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
-            var sql = "INSERT INTO users (name,email,pwhash) VALUES ('"+req.body.name+"', '" + req.body.email + "', '" + derivedKey+"')";
+            var sql = "INSERT INTO users (name,email,pwhash, admin) VALUES ('"+req.body.name+"', '" + req.body.email + "', '" + derivedKey+"', 0)";
             con.query(sql, function (err, result) {
               if (err) throw err;
             });
