@@ -8,6 +8,11 @@
   },
   "author": "Sam Haggans",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SamHaggans/trashCleanUp.git"
+  },
+  "homepage": "https://fhstrashcleanup.com",
   "dependencies": {
     "body-parser": "^1.19.0",
     "connect-redis": "^3.4.2",
