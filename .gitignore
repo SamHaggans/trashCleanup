@@ -1,0 +1,8 @@
+/node_modules
+config.json
+.DS_Store
+public/.DS_Store
+mysqlcommands.md
+/sessions
+/config/salt.txt
+/config/config.json
