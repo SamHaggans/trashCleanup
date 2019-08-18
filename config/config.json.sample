@@ -1,6 +1,6 @@
 {
-    "dbUser": "user",
-    "dbPw": "password",
-    "dbName": "name",
-    "dbHost": "host"
-  }
+	"dbUser": "user",
+	"dbPw": "password",
+	"dbName": "name",
+	"dbHost": "host"
+}
