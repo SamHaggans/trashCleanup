@@ -6,3 +6,4 @@ mysqlcommands.md
 /sessions
 /config/salt.txt
 /config/config.json
+package-lock.json
