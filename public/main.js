@@ -12,7 +12,7 @@ $("document").ready(function() {
 	  if (scrolllength >1){
 		scrolllength = 1
 	  }
-	  $(".header").css("backgroundColor", "rgba(255,255,255,"+scrolllength+0.3+")");
+	  $(".header").css("backgroundColor", "rgba(255,255,255,"+scrolllength+")");
   }
 
 //Jquery to get classlists nicely
