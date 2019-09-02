@@ -44,6 +44,7 @@ module.exports = function (dirname) {
 				var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
 				if (derivedKey == result.pwhash) {
 					req.session.username = result.name;
+					req.session.user_id = result.id;
 					res.json({signIn: true, uName: result.name});
 				}
 				else {
@@ -74,5 +75,101 @@ module.exports = function (dirname) {
 			res.json({ok: false});
 		}
 	});
+
+	router.post("/gethours", function (req, res) {
+		if (req.session.username){
+			var sql = "SELECT * FROM signups WHERE user_id = '" + req.session.user_id + "'";
+			con.query(sql, function (err, result) {
+				
+				if (err) {
+					res.json({ok: false});
+					throw err;
+				}
+				else {
+					var totalHours = 0;
+					for (var i = 0; i < result.length; i++){
+						if (result[i].attendance == 0) {
+							totalHours += 0.5;
+						}
+					}
+					res.json({ok: true, hours: totalHours});
+				}
+
+			})
+		} 
+			
+		else {
+			res.json({ok: false});
+		}
+	});
+
+	router.post("/getsessions", async function (req, res) {
+		if (req.session.username){
+			var result;
+			function getSignups() {
+				return new Promise(function(resolve, reject) {
+					var sql = "SELECT * FROM signups WHERE user_id = '" + req.session.user_id + "'";
+					con.query(sql, function (err, resulty) {
+					if (err) {
+						res.json({ok: false});
+						throw err;
+						
+					}
+					resolve(resulty);
+					});
+				});
+			}
+			result = await getSignups();
+			var thisAttendance;
+			var html = "";
+
+			function getSession (result, j) {
+				return new Promise(function(resolve, reject) {
+					var attendanceOptions = ["present","absent","cancelled", "scheduled"];
+					var months = ["January", "February","March","April","May","June","July","August","September", "October","November","December"];
+					var endings = ["st", "nd","rd","th"];
+					var ending;
+					con.query("SELECT * FROM sessions WHERE id = "+result[j].session_id, function (err, sessionResult) {  
+						sessionResult = sessionResult[0];
+						if (err) throw err;
+						thisAttendance = attendanceOptions[result[j].attendance];
+						if (sessionResult.day < 5) {
+							ending = endings[sessionResult.day-1];
+						}
+						else {
+							ending = ending[ending.length-1];
+						}
+						html = `
+						<div class = "session ${thisAttendance}">
+							<div class = "sessionDate">
+								${months[sessionResult.month]} ${sessionResult.day}${ending}, ${sessionResult.year}
+							</div>
+							<div class ="attendance">
+							Attendance: ${thisAttendance}
+							</div>
+						</div>
+						`;
+						resolve(html);
+					});
+				});
+			}
+
+			for (var j = 0; j < result.length; j++){
+				html += await getSession(result, j);
+			}
+			res.json({ok: true, html: html});	
+			
+		} 
+			
+		else {
+			res.json({ok: false});
+		}
+	});
+
+
+
+
+
+
 	return router;
 }

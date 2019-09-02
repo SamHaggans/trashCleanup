@@ -71,4 +71,54 @@ body{
 ul {
 	list-style-position: inside;
 }
-	  
+
+.pageTitle, .section{
+	display: block;
+	text-align: center;
+}
+
+h1 {
+	display: block;
+	text-align: center;
+	font-size: 70px;
+}
+
+h2 {
+	display: block;
+	text-align: center;
+	font-size: 50px;
+}
+
+h3 {
+	display: block;
+	text-align: center;
+	font-size: 30px;
+}
+
+.session {
+	width: 60%;
+	border-radius: 10px;
+	margin-left: auto;
+	margin-right: auto;
+
+}
+hr {
+	width: 80%;
+
+}
+
+.center {
+	text-align: center;
+}
+
+.present {
+	border: solid 3px green;
+}
+
+.absent {
+	border: solid 3px red;
+}
+
+.cancelled {
+	border: solid 3px grey;
+}
