@@ -41,9 +41,18 @@ module.exports = function(dirname) {
 
 	router.get("/merch", function(req, res) {
 		res.sendFile(client_dir + "merch.html", {root: dirname});
-	});
+    });
 
+    router.get("/session/:id", function(req, res) {
+        if (req.params.id == Number(req.params.id)) {
+            res.sendFile(client_dir + "session.html", {root: dirname});
+        }
+        else {
+            res.sendFile(client_dir + req.params.id, {root: dirname});
+        }
+    });
 
+    var allowedFiles = ["main.js", "account.js", "header.js","login.js","merch.js","myhours.js","session.js","signup.js","style.js","favicon.ico","favicon2.ico"];
 
 
 

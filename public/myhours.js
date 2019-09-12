@@ -8,8 +8,11 @@ $("document").ready(function() {
 	$.post('/getsessions')  
 			.always(function(response) {
 				if (response.ok) {
-					console.log(response.html);
-						$(".sessions").html(response.html);
-				}
+					$(".sessions").html(response.html);
+                }
+                $(".session").click(function() {
+                    console.log($(this).attr("id"));
+                    window.location.href = "/session/"+$(this).attr('id');
+                });
 			});
 });

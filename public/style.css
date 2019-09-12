@@ -124,3 +124,24 @@ hr {
 .cancelled {
 	border: solid 3px grey;
 }
+.scheduled {
+	border: solid 3px blue;
+}
+.sessionInfo {
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+    font-size: 25px;
+    line-height:45px;
+    text-align:center;
+}
+
+.signupButton {
+    display:block;
+    width:50%;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+    background-color:green;
+    border: 3px solid black;
+}

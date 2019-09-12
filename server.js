@@ -41,7 +41,7 @@ app.use(session(
 	{
 		key: "ID",
 		store: new FileStore(fileStoreOptions),
-		secret: 'yjdlkasjflkdsaf',
+		secret: config.sessionSecret,
 		resave: false,
 		saveUninitialized: true,
 		cookie: { secure: false }
@@ -52,6 +52,42 @@ app.use("/", routes);
 app.use("/", posts);
 
 var server = app.listen(port, function () {
-	var port = server.address().port;
-	console.log("Server started on port: localhost:%s", port);
+    var port = server.address().port;
+    console.log("Server started on port: localhost:%s", port);
 });
+
+setInterval(function() {
+    createSessions();
+  }, 1000 * 60 * 60 * 24);
+
+async function createSessions() {
+    var current = new Date().getTime();
+    var increment = 1000 * 60 * 60 * 24;//ms => seconds => minutes => hours => 1 day
+    var newTime;
+    var day;
+    var month;
+    var year;
+    for (var i = 1; i < 15; i++) {
+        newTime = new Date(current + increment*i);
+        day = newTime.getDate();
+        month = newTime.getMonth();
+        year = newTime.getFullYear();
+        await loadSession(year, month, day);
+    }
+}
+
+function loadSession (year, month, day) {
+    return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions WHERE year = ? AND month = ? AND day = ?";
+        con.query(sql, [year,month,day], function(err, result) {
+            if (err) throw err;
+            if (result.length == 0) {
+                var sql = "INSERT INTO sessions (year, month, day, leader, status) VALUES (?,?,?,?,?)";
+                con.query(sql, [year,month,day,1,0], function (err, result) {
+                    if (err) throw err;
+                    resolve();
+                }); 
+            }
+        })
+    }); 
+}
