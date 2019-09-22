@@ -33,6 +33,7 @@ global.con = mysql.createConnection({
 con.connect(function (err) {
 	if (err) throw err;
 	console.log("Connected to database");
+	createSessions();
 });
 
 app.set('trust proxy', 1);
@@ -68,12 +69,14 @@ async function createSessions() {
     var month;
     var year;
     for (var i = 1; i < 15; i++) {
-        newTime = new Date(current + increment*i);
-        day = newTime.getDate();
-        month = newTime.getMonth();
-        year = newTime.getFullYear();
-        await loadSession(year, month, day);
-    }
+		newTime = new Date(current + increment*i);
+		if (newTime.getDay() > 0 && newTime.getDay()<6) {
+			day = newTime.getDate();
+			month = newTime.getMonth();
+			year = newTime.getFullYear();
+			await loadSession(year, month, day);
+		}
+	}
 }
 
 function loadSession (year, month, day) {
