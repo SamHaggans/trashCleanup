@@ -39,10 +39,6 @@ module.exports = function(dirname) {
 		}
 	});
 
-	router.get("/merch", function(req, res) {
-		res.sendFile(client_dir + "merch.html", {root: dirname});
-    });
-
     router.get("/session/:id", function(req, res) {
         if (req.params.id == Number(req.params.id)) {
             res.sendFile(client_dir + "session.html", {root: dirname});
