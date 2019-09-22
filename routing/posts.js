@@ -107,7 +107,7 @@ module.exports = function (dirname) {
         var months = ["January", "February","March","April","May","June","July","August","September", "October","November","December"];
 		var endings = ["st", "nd","rd","th"];
         var sessionID = req.body.id;
-        var html = "test";
+        var html = "";
         var sql = "SELECT * FROM sessions WHERE id = ?";
         con.query(sql, [sessionID], async function (err, session) {
             if (err) throw err;
@@ -146,7 +146,7 @@ module.exports = function (dirname) {
                             Leader: ${leader.name}<br>
                             Contact: <a href = "mailto:${leader.email}">${leader.email}</a>
                         </div>
-                        <div class = "signupButton">
+                        <div class = "greenButton">
                             Sign Up for this Session
                         </div>
                     </div>
@@ -219,7 +219,73 @@ module.exports = function (dirname) {
 		}
 	});
 
-
+	router.post("/getsessionslist", async function (req, res) {
+        var months = ["January", "February","March","April","May","June","July","August","September", "October","November","December"];
+		var endings = ["st", "nd","rd","th"];
+		var weekdays = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+		var html = "";
+		var increment = 1000 * 60 * 60 * 24;//ms => seconds => minutes => hours => 1 day
+		var current = new Date().getTime();
+		var currentDate = new Date(current);
+		var newTime;
+		var day;
+		var month;
+		var year;
+		if (currentDate.getDay() < 6) {
+			var starting = new Date(current - currentDate.getDay()*(increment));
+		}
+		else {
+			var starting = new Date(current + increment);
+		}
+        for (var i = 1; i < 6; i++) {
+			var newDate = new Date(starting.getTime() + i*increment);
+			day = newDate.getDate();
+			month = newDate.getMonth();
+			year = newDate.getFullYear();
+			var session = await getSessionByDate(year, month, day);
+            var leader = await getUser(Number(session.leader));
+            var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
+            var signupStatus = "You are not currently signed up for this session";
+            if (currentSignup.attendance == 0) {
+                signupStatus = "You are signed up for this session";
+            }
+            else if (currentSignup.attendance == 1) {
+                signupStatus = "You were present at this session";
+            }
+            else if (currentSignup.attendance == 2) {
+                signupStatus = "You were absent at this session";
+            }
+            else if (currentSignup.attendance == 3) {
+                signupStatus = "This session was cancelled";
+            }
+            if (session.day < 5) {
+                ending = endings[session.day-1];
+            }
+            else {
+                ending = endings[endings.length-1];
+			}
+			var otherSignups = await getSignupsBySession(session.id);
+			var attendeesWord = "attendees";
+			if (otherSignups.length ==1) {
+				attendeesWord = "attendee";
+			}
+            html += `
+                    <div class = "sessionCard" id = "${session.id}">
+                        <h3 class = "sessionDay">${weekdays[newDate.getDay()]}</h3>
+                        <div class = "sessionDate">
+                            ${months[session.month]} ${session.day}${ending}, ${session.year}
+                        </div><br>
+                        <div class ="others">
+                            ${otherSignups.length} ${attendeesWord}
+                        </div><br>
+                        <div class = "leader">
+                            Leader: ${leader.name}<br>
+                        </div>
+                    </div>
+						`;
+		}
+		res.send({ok: true, html: html});
+	});
 
 
 
@@ -250,4 +316,34 @@ function getSignupfromSessionUser(session_id, user_id) {
             }
         })
     });
+}
+
+function getSignupsBySession(session_id) {
+	return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM signups WHERE session_id = ?";
+        con.query(sql, [session_id], function (err, result) {
+			if (err) throw err;
+            resolve(result);
+        })
+    });
+}
+
+function getSession(id) {
+	return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions WHERE id = ?";
+        con.query(sql, [id], function (err, result) {
+            if (err) throw err;
+            resolve(result[0]);
+        });
+    }); 
+}
+
+function getSessionByDate(year, month, day) {
+	return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions WHERE year = ? AND month = ? AND day = ?";
+        con.query(sql, [year, month, day], function (err, result) {
+            if (err) throw err;
+            resolve(result[0]);
+        });
+    }); 
 }

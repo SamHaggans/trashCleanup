@@ -11,7 +11,6 @@ $("document").ready(function() {
 					$(".sessions").html(response.html);
                 }
                 $(".session").click(function() {
-                    console.log($(this).attr("id"));
                     window.location.href = "/session/"+$(this).attr('id');
                 });
 			});

@@ -47,9 +47,12 @@ module.exports = function(dirname) {
         if (req.params.id == Number(req.params.id)) {
             res.sendFile(client_dir + "session.html", {root: dirname});
         }
-        else {
-            res.sendFile(client_dir + req.params.id, {root: dirname});
-        }
+        else if (req.params.id == "header.js" || req.params.id == "header.html"|| req.params.id == "signed-header.html"){
+            res.sendFile(partials_dir + req.params.id, {root: dirname});
+		}
+		else {
+			res.sendFile(client_dir + req.params.id, {root: dirname});
+		}
     });
 
     var allowedFiles = ["main.js", "account.js", "header.js","login.js","merch.js","myhours.js","session.js","signup.js","style.js","favicon.ico","favicon2.ico"];
@@ -63,6 +66,14 @@ module.exports = function(dirname) {
 		else {
 			res.sendFile(partials_dir + "header.html", {root: dirname});
 		}
+	});
+
+	router.get("/header.js", function(req, res) {
+		res.sendFile(partials_dir + "header.js", {root: dirname});
+	});
+
+	router.get("/public/header.js", function(req, res) {
+		res.sendFile(partials_dir + "header.js", {root: dirname});
 	});
 
 	return router;
