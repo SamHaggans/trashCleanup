@@ -2,5 +2,6 @@
 	"dbUser": "user",
 	"dbPw": "password",
 	"dbName": "name",
-	"dbHost": "host"
+	"dbHost": "host",
+	"sessionSecret": "secret"
 }
