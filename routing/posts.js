@@ -113,7 +113,8 @@ module.exports = function (dirname) {
             if (err) throw err;
             session = session[0];
             var leader = await getUser(Number(session.leader));
-            var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
+			var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
+			var otherSignups = await getSignupsBySession(session.id);
             var signupStatus = "You are not currently signed up for this session";
             if (currentSignup.attendance == 0) {
                 signupStatus = "You are signed up for this session";
@@ -132,7 +133,12 @@ module.exports = function (dirname) {
             }
             else {
                 ending = endings[endings.length-1];
-            }
+			}
+			var attendeeHTML = "";
+			for (var i = 0; i < otherSignups.length; i++) {
+				var user = await getUser(Number(otherSignups[i].user_id));
+				attendeeHTML+=`<div class = "attendeeInfo">${i+1}. ${user.name}</div>`;
+			}
             html = `
                     <div class = "sessionInfo">
                         <h3>Session Information:</h3>
@@ -148,7 +154,12 @@ module.exports = function (dirname) {
                         </div>
                         <div class = "greenButton">
                             Sign Up for this Session
-                        </div>
+						</div>
+						<h4 class = "center">Current Attendees:</h6>
+						<hr />
+						<div class = "attendees">
+							${attendeeHTML}
+						</div>
                     </div>
 						`;
             res.send({ok: true, html: html});

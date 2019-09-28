@@ -168,3 +168,8 @@ hr {
 	width: 90%;
 	margin-left: 15%;
 }
+
+.attendees {
+	text-align: left;
+	padding-left: 38%;
+}
