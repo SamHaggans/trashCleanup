@@ -150,7 +150,6 @@ module.exports = function (dirname) {
                         </div>
                         <div class = "leader">
                             Leader: ${leader.name}<br>
-                            Contact: <a href = "mailto:${leader.email}">${leader.email}</a>
                         </div>
                         <div class = "greenButton">
                             Sign Up for this Session
