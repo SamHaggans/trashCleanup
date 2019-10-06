@@ -33,7 +33,6 @@ module.exports = function (dirname) {
 		con.query("SELECT * FROM users WHERE email = '"+req.body.email+"'", function (err, result) {
 			if (err) throw err;
 			if (result.length === 0){
-				console.log("yeet");
 				res.json({noAccount: true});
 			}
 			else{
@@ -88,7 +87,7 @@ module.exports = function (dirname) {
 				else {
 					var totalHours = 0;
 					for (var i = 0; i < result.length; i++){
-						if (result[i].attendance == 0) {
+						if (result[i].attendance == 1) {
 							totalHours += 0.5;
 						}
 					}
