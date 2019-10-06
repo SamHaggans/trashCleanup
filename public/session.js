@@ -3,7 +3,23 @@ $("document").ready(function() {
     $.post('/getsession', {id: sessionID})  
 			.always(function(response) {
 				if (response.ok) {
-					 $(".main").html(response.html);
+                    $(".main").html(response.html);
+                    $(".redButton").click(function (){
+                        $.post("/cancelSignup", {id: sessionID})
+                                .always(function(response) {
+                                    if (response.ok) {
+                                        location.reload(); 
+                                    }
+                                });
+                    });
+                    $(".greenButton").click(function (){
+                        $.post("/sessionSignup", {id: sessionID})
+                                .always(function(response) {
+                                    if (response.ok) {
+                                        location.reload(); 
+                                    }
+                                });
+                    });
 				}
-			});
+            });
 });

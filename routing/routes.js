@@ -17,7 +17,7 @@ module.exports = function(dirname) {
 		res.sendFile(client_dir + "logout.html", {root: dirname});
 	});
 	
-	router.get("/sessions", function(req, res) {
+	router.get("/session-signup", function(req, res) {
 		res.sendFile(client_dir + "sessions.html", {root: dirname});
 	});
 

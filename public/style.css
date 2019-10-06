@@ -137,20 +137,6 @@ hr {
 	text-align:center;
 }
 
-.greenButton {
-    display:block;
-	width:25%;
-	height:100px;
-    margin-left:auto;
-    margin-right:auto;
-    text-align:center;
-    background-color:green;
-	border: 3px solid black;
-	cursor: pointer;
-	text-decoration: none;
-	color: black;
-}
-
 .sessionCard {
 	border: 3px solid black;
 	height: 300px;
@@ -165,11 +151,39 @@ hr {
 }
 
 .sessionsList {
-	width: 90%;
-	margin-left: 15%;
+	width: 95%;
+	margin-left: 3%;
 }
 
 .attendees {
 	text-align: left;
 	padding-left: 38%;
+}
+
+.greenButton {
+    background-color: rgb(76, 177, 80);
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    height: 30px;
+    line-height: 30px;
+    cursor: pointer;
+}
+
+.redButton {
+    background-color: rgb(180, 22, 22);
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    height: 30px;
+    line-height: 30px;
+    cursor:pointer;
 }

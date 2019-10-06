@@ -115,24 +115,34 @@ module.exports = function (dirname) {
 			var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
 			var otherSignups = await getSignupsBySession(session.id);
             var signupStatus = "You are not currently signed up for this session";
+            var buttonHTML = `<div class = "greenButton" ">
+                              Sign up for this session
+                              </div>`;
             if (currentSignup.attendance == 0) {
                 signupStatus = "You are signed up for this session";
+                buttonHTML = `<div class = "redButton">
+                              Cancel signup
+                              </div>`;
             }
             else if (currentSignup.attendance == 1) {
                 signupStatus = "You were present at this session";
+                buttonHTML = "";
             }
             else if (currentSignup.attendance == 2) {
                 signupStatus = "You were absent at this session";
+                buttonHTML = "";
             }
             else if (currentSignup.attendance == 3) {
                 signupStatus = "This session was cancelled";
+                buttonHTML = "";
             }
             if (session.day < 5) {
                 ending = endings[session.day-1];
             }
             else {
                 ending = endings[endings.length-1];
-			}
+            }
+            
 			var attendeeHTML = "";
 			for (var i = 0; i < otherSignups.length; i++) {
 				var user = await getUser(Number(otherSignups[i].user_id));
@@ -150,10 +160,10 @@ module.exports = function (dirname) {
                         <div class = "leader">
                             Leader: ${leader.name}<br>
                         </div>
-                        <div class = "greenButton">
-                            Sign Up for this Session
+                        <div class = "actionButton">
+                            ${buttonHTML}
 						</div>
-						<h4 class = "center">Current Attendees:</h6>
+						<h4 class = "center">Attendees:</h6>
 						<hr />
 						<div class = "attendees">
 							${attendeeHTML}
@@ -187,7 +197,7 @@ module.exports = function (dirname) {
 
 			function getSession (result, j) {
 				return new Promise(function(resolve, reject) {
-					var attendanceOptions = ["scheduled","present","absent", "cancelled"];
+					var attendanceOptions = ["scheduled","present","absent", "session cancelled"];
 					var months = ["January", "February","March","April","May","June","July","August","September", "October","November","December"];
 					var endings = ["st", "nd","rd","th"];
 					var ending;
@@ -296,8 +306,45 @@ module.exports = function (dirname) {
 		res.send({ok: true, html: html});
 	});
 
+    router.post("/cancelSignup", function (req, res) {
+		if (req.session.username){
+			var sql = "DELETE FROM signups WHERE user_id = ? AND session_id = ?";
+			con.query(sql, [req.session.user_id, req.body.id],function (err, result) {
+				if (err) {
+					res.json({ok: false});
+					throw err;
+				}
+				else {
+                    res.json({ok: true});
+                }
 
+			})
+		} 
+			
+		else {
+			res.json({ok: false});
+		}
+    });
 
+    router.post("/sessionSignup", function (req, res) {
+		if (req.session.username){
+			var sql = "INSERT INTO signups (session_id, user_id, attendance) VALUES(?,?,0)";
+			con.query(sql, [req.body.id, req.session.user_id],function (err, result) {
+				if (err) {
+					res.json({ok: false});
+					throw err;
+				}
+				else {
+                    res.json({ok: true});
+                }
+
+			})
+		} 
+			
+		else {
+			res.json({ok: false});
+		}
+    });
 
 	return router;
 }
