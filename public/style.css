@@ -210,6 +210,9 @@ hr {
     cursor: pointer; 
     width: 100%;
 }
+.greenButtonExtend:hover, .greenButton:hover {
+    background-color: rgb(48, 128, 51);
+}
 
 .redButton {
     background-color: rgb(180, 22, 22);
