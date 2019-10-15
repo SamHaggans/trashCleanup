@@ -172,8 +172,9 @@ hr {
 }
 
 .sessionsList {
-	width: 95%;
-	margin-left: 3%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .attendees {
