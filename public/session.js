@@ -4,7 +4,7 @@ $("document").ready(function() {
 			.always(function(response) {
 				if (response.ok) {
                     $(".main").html(response.html);
-                    $(".redButton").click(function (){
+                    $(".cancel").click(function (){
                         $.post("/cancelSignup", {id: sessionID})
                                 .always(function(response) {
                                     if (response.ok) {
@@ -12,13 +12,16 @@ $("document").ready(function() {
                                     }
                                 });
                     });
-                    $(".greenButton").click(function (){
+                    $(".signup").click(function (){
                         $.post("/sessionSignup", {id: sessionID})
                                 .always(function(response) {
                                     if (response.ok) {
                                         location.reload(); 
                                     }
                                 });
+                    });
+                    $(".attendanceButton").click(function (){
+                        location.href = `${sessionID}/attendance`;
                     });
 				}
             });

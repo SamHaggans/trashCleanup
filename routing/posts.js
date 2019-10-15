@@ -13,24 +13,27 @@ const masterKey = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678
 
 module.exports = function (dirname) {
 	router.post('/signup', function(req, res) {
-		con.query("SELECT * FROM users WHERE email = '"+req.body.email+"'", function (err, result) {
+        var sql = "SELECT * FROM users WHERE email = ?";
+		con.query(sql, [req.body.email], function (err, result) {
 		  if (err) throw err;
 		  if (result.length===0){
 			var saltVal = masterKey.indexOf(req.body.email[0]) * masterKey.indexOf(req.body.email[1]);
 			var saltLines = fs.readFileSync("./config/salt.txt", "utf-8").split(/\n/g);
 			var salt = saltLines[saltVal];
 			var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
-			var sql = "INSERT INTO users (name,email,pwhash, admin) VALUES ('"+req.body.name+"', '" + req.body.email + "', '" + derivedKey+"', 0)";
-			con.query(sql, function (err, result) {
-			  if (err) throw err;
+			var sql = "INSERT INTO users (name,email,pwhash, admin) VALUES (?, ?, ?, 0)";
+			con.query(sql, [req.body.name, req.body.email, derivedKey], function (err, result) {
+              if (err) throw err;
+              res.json({ ok: true });
 			});
-		  }
+          }
+          else {res.json({ok: false, error: "emailReuse"})}
 		});
-		res.json({ ok: true });
 	});
 	  
 	router.post('/login', function(req, res) {
-		con.query("SELECT * FROM users WHERE email = '"+req.body.email+"'", function (err, result) {
+        var sql = "SELECT * FROM users WHERE email = ?";
+		con.query(sql, [req.body.email], function (err, result) {
 			if (err) throw err;
 			if (result.length === 0){
 				res.json({noAccount: true});
@@ -43,7 +46,8 @@ module.exports = function (dirname) {
 				var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
 				if (derivedKey == result.pwhash) {
 					req.session.username = result.name;
-					req.session.user_id = result.id;
+                    req.session.user_id = result.id;
+                    req.session.admin = result.admin;
 					res.json({signIn: true, uName: result.name, id: result.id});
 				}
 				else {
@@ -77,8 +81,8 @@ module.exports = function (dirname) {
 
 	router.post("/gethours", function (req, res) {
 		if (req.session.username){
-			var sql = "SELECT * FROM signups WHERE user_id = '" + req.session.user_id + "'";
-			con.query(sql, function (err, result) {
+			var sql = "SELECT * FROM signups WHERE user_id = ?";
+			con.query(sql, [req.session.user_id], function (err, result) {
 				
 				if (err) {
 					res.json({ok: false});
@@ -115,12 +119,22 @@ module.exports = function (dirname) {
 			var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
 			var otherSignups = await getSignupsBySession(session.id);
             var signupStatus = "You are not currently signed up for this session";
-            var buttonHTML = `<div class = "greenButton" ">
+            var currentUser = await getUser(req.session.user_id);
+            if (currentUser.admin || req.session.user_id == Number(session.leader)) {
+                var attendanceButton = `<div class = "attendanceButton greenButton" ">
+                                            Take Attendance
+                                        </div>`;
+            }
+            else {
+                var attendanceButton = "";
+            }
+
+            var buttonHTML = `<div class = "greenButton signup">
                               Sign up for this session
                               </div>`;
             if (currentSignup.attendance == 0) {
                 signupStatus = "You are signed up for this session";
-                buttonHTML = `<div class = "redButton">
+                buttonHTML = `<div class = "redButton cancel">
                               Cancel signup
                               </div>`;
             }
@@ -162,6 +176,7 @@ module.exports = function (dirname) {
                         </div>
                         <div class = "actionButton">
                             ${buttonHTML}
+                            ${attendanceButton}
 						</div>
 						<h4 class = "center">Attendees:</h6>
 						<hr />
@@ -180,8 +195,8 @@ module.exports = function (dirname) {
 			var result;
 			function getSignups() {
 				return new Promise(function(resolve, reject) {
-					var sql = "SELECT * FROM signups WHERE user_id = '" + req.session.user_id + "'";
-					con.query(sql, function (err, resulty) {
+					var sql = "SELECT * FROM signups WHERE user_id = ?";
+					con.query(sql, [req.session.user_id], function (err, resulty) {
 					if (err) {
 						res.json({ok: false});
 						throw err;
@@ -200,8 +215,9 @@ module.exports = function (dirname) {
 					var attendanceOptions = ["scheduled","present","absent", "session cancelled"];
 					var months = ["January", "February","March","April","May","June","July","August","September", "October","November","December"];
 					var endings = ["st", "nd","rd","th"];
-					var ending;
-					con.query("SELECT * FROM sessions WHERE id = "+result[j].session_id, function (err, sessionResult) {  
+                    var ending;
+                    var sql = "SELECT * FROM sessions WHERE id = ?";
+					con.query(sql, [result[j].session_id], function (err, sessionResult) {  
 						sessionResult = sessionResult[0];
 						if (err) throw err;
 						thisAttendance = attendanceOptions[result[j].attendance];
@@ -345,6 +361,32 @@ module.exports = function (dirname) {
 			res.json({ok: false});
 		}
     });
+    router.post("/getattendance", async function (req, res) {
+        var html = "";
+        var username;
+        var signups = await getSignupsBySession(req.body.id);
+        for (var i = 0; i < signups.length; i++) {
+            var user = await getUser(signups[i].user_id);
+            username = user.name;
+            html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+        }
+        res.json({ok: true, html: html});
+    });
+
+    router.post("/takeattendance", async function (req, res) {
+        var html = "";
+        var present = req.body.present;
+        var signups = await getSignupsBySession(req.body.id);
+        for (var i = 0; i < signups.length; i++) {
+            if (present.includes(signups[i].user_id)) {
+                await markAttendance(req.body.id, signups[i].user_id, 1);
+            }
+            else {
+                await markAttendance(req.body.id, signups[i].user_id, 2);
+            }
+        }
+        res.json({ok: true});
+    });
 
 	return router;
 }
@@ -372,6 +414,18 @@ function getSignupfromSessionUser(session_id, user_id) {
             }
         })
     });
+}
+
+function markAttendance(session_id, user_id, attendance) {
+    return new Promise(function(resolve,reject) {
+        var sql = "UPDATE signups SET attendance = ? WHERE session_id = ? AND user_id = ?";
+        con.query(sql, [attendance, session_id, user_id], function(err, result) {
+            if (err) throw err;
+            else{
+                resolve(true);
+            }
+        })
+    })
 }
 
 function getSignupsBySession(session_id) {

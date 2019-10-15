@@ -51,6 +51,20 @@ module.exports = function(dirname) {
 		}
     });
 
+    router.get("/session/:id/:query", function(req, res) {
+        var leader = getSession(req.params.id).leader;
+            if (req.params.query == "attendance") {
+                res.sendFile(client_dir + "attendance.html", {root: dirname});
+            }
+            else if (req.params.query == "header.js" || req.params.query == "header.html"|| req.params.query == "signed-header.html"){
+                res.sendFile(partials_dir + req.params.query, {root: dirname});
+            }
+            else {
+                res.sendFile(client_dir + req.params.query, {root: dirname});
+            }
+        
+    });
+
     var allowedFiles = ["main.js", "account.js", "header.js","login.js","merch.js","myhours.js","session.js","signup.js","style.js","favicon.ico","favicon2.ico"];
 
 
@@ -73,4 +87,15 @@ module.exports = function(dirname) {
 	});
 
 	return router;
+}
+
+
+function getSession(id) {
+	return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions WHERE id = ?";
+        con.query(sql, [id], function (err, result) {
+            if (err) throw err;
+            resolve(result[0]);
+        });
+    }); 
 }

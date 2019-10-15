@@ -1,17 +1,17 @@
 $("document").ready(function() {
-	$("#adduser").click(function(){
+	$("#login").click(function(){
 		var pass = $('input[name=password]').val();
 		var email = $('input[name=email]').val();
 		$.post('/login', { email: email, pass: pass })  
 			.always(function(response) {
 				if (response.signIn) {
-				   $(".main").html("Signed in as "+response.uName);
+                   $(".alertSpace").html(`<div class = "okAlert">Signed in as ${response.uName}</div>`);
 				   $.get('/headerfile').always(function(response) {
 					$(".header").html(response);
 					});
 				}
 				else {
-					$(".main").html("Incorrect email/password combination"); 
+					$(".alertSpace").html(`<div class = "badAlert">Incorrect Email/Password combination</div>`);
 					$.get('/headerfile').always(function(response) {
 						$(".header").html(response);
 					});
