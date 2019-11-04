@@ -3,6 +3,7 @@ var router = express.Router()
 const partials_dir = "./partials/";
 const client_dir = "./public/";
 
+// var ip = req.headers['x-forwarded-for'];
 module.exports = function(dirname) {
 	
 	router.get("/signup", function(req, res) {

@@ -374,7 +374,6 @@ module.exports = function (dirname) {
     });
 
     router.post("/takeattendance", async function (req, res) {
-        var html = "";
         var present = req.body.present;
         var signups = await getSignupsBySession(req.body.id);
         for (var i = 0; i < signups.length; i++) {
