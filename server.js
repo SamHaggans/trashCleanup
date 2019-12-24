@@ -7,7 +7,7 @@ const pbkdf2 = require('pbkdf2');
 const config = JSON.parse(fs.readFileSync("./config/config.json", "utf-8"));
 const client_dir = "./public/";
 const partials_dir = "./partials/";
-e
+
 const routes = require("./routing/routes.js")(dirnamey);
 const posts = require("./routing/posts.js")(dirnamey);
 
