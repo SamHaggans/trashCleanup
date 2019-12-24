@@ -13,7 +13,7 @@ $("document").ready(function() {
                                 });
                     });
                     $(".signup").click(function (){
-                        $.post("/sessionSignup", {id: sessionID})
+                        $.post("/sessionSignup", {id: sessionID, position: $(this).attr('id')})
                                 .always(function(response) {
                                     if (response.ok) {
                                         location.reload(); 

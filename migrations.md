@@ -1,0 +1,1 @@
+ALTER TABLE signups ADD COLUMN position int NOT NULL DEFAULT 0;

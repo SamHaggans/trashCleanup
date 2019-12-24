@@ -124,7 +124,8 @@ h3 {
     font-size: 40px;
 }
 .attendeePresent {
-	border: solid 5px green;
+    border: solid 2px green;
+    background-color: #bffcbf;
 }
 
 hr {
@@ -136,18 +137,22 @@ hr {
 }
 
 .present {
-	border: solid 3px green;
+    border: solid 3px green;
+    background-color: #bffcbf;
 }
 
 .absent {
-	border: solid 3px red;
+    border: solid 3px red;
+    background-color: #ff8080;
 }
 
 .cancelled {
-	border: solid 3px grey;
+    border: solid 3px grey;
+    background-color: #bdbdbd;
 }
 .scheduled {
-	border: solid 3px blue;
+    border: solid 3px blue;
+    background-color: #bab3fd;
 }
 .sessionInfo {
     margin-left: auto;
@@ -177,9 +182,24 @@ hr {
     align-items: center;
 }
 
-.attendees {
-	text-align: left;
-	padding-left: 38%;
+.positions {
+    margin-left:auto; 
+    margin-right:auto;
+    border-spacing: 10px;
+}
+
+.attendeeInfo {
+    padding-right: 10px;
+}
+
+.location {
+    padding: 10px;
+    text-align: left;
+}
+
+.name {
+    padding: 10px;
+    text-align: left;
 }
 
 .greenButton {
@@ -191,9 +211,9 @@ hr {
     text-decoration: none;
     display: inline-block;
     font-size: 20px;
-    height: 30px;
+    height: auto;
     line-height: 30px;
-    cursor: pointer; 
+    cursor: pointer;
 }
 
 .greenButtonExtend {
@@ -205,7 +225,7 @@ hr {
     text-decoration: none;
     display: inline-block;
     font-size: 20px;
-    height: 30px;
+    height: auto;
     line-height: 30px;
     cursor: pointer; 
     width: 100%;
@@ -267,7 +287,7 @@ h4 {
     width: 80%;
     margin: auto;
     border: solid 3px green;
-    height: 30px;
+    height: auto;
     line-height: 30px;
     font-size: 25px;
     text-align: center;
@@ -279,7 +299,7 @@ h4 {
     width: 80%;
     margin: auto;
     border: solid 3px red;
-    height: 30px;
+    height: auto;
     line-height: 30px;
     font-size: 25px;
     text-align: center;
@@ -290,4 +310,22 @@ h4 {
 .href {
     margin: 5px;
     text-align: center;
+}
+
+table {
+    border:none;
+    border-collapse: collapse;
+}
+
+table td {
+    border-left: 2px solid rgb(54, 54, 54);
+    border-right: 2px solid rgb(54, 54, 54);
+}
+
+table td:first-child {
+    border-left: none;
+}
+
+table td:last-child {
+    border-right: none;
 }

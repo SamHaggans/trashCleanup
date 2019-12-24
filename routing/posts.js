@@ -13,8 +13,8 @@ const masterKey = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678
 
 module.exports = function (dirname) {
 	router.post('/signup', function(req, res) {
-        var sql = "SELECT * FROM users WHERE email = ?";
-		con.query(sql, [req.body.email], function (err, result) {
+        var sql = "SELECT * FROM users WHERE email = ? OR name = ?";
+		con.query(sql, [req.body.email, req.body.name], function (err, result) {
 		  if (err) throw err;
 		  if (result.length===0){
 			var saltVal = masterKey.indexOf(req.body.email[0]) * masterKey.indexOf(req.body.email[1]);
@@ -27,7 +27,7 @@ module.exports = function (dirname) {
               res.json({ ok: true });
 			});
           }
-          else {res.json({ok: false, error: "emailReuse"})}
+          else {res.json({ok: false, error: "valueReuse"})}
 		});
 	});
 	  
@@ -57,23 +57,18 @@ module.exports = function (dirname) {
 	});
 	});
 	
-	router.post('/logout', function(req, res) {
+	router.post('/logout', async function(req, res) {
 		if (req.session.username){
-			req.session.destroy(function(err){  
-			if (err) {
-				res.json({ok: false});
-				throw err; 
-			}
-			else {
-				res.json(
-					{
-						ok: true
-					}
-				); 
-			}  
-		}); 
-			
-		}
+			req.session.username = null;
+            req.session.user_id = null;
+            req.session.admin = null;
+            await sleep(2000);
+            res.json(
+                {
+                    ok: true
+                }
+            ); 
+		} 
 		else {
 			res.json({ok: false});
 		}
@@ -108,7 +103,8 @@ module.exports = function (dirname) {
     
     router.post("/getsession", function (req, res) {
         var months = ["January", "February","March","April","May","June","July","August","September", "October","November","December"];
-		var endings = ["st", "nd","rd","th"];
+        var endings = ["st", "nd","rd","th"];
+        var locations = ["600 & 800 Halls, Bricks", "600 & 800 Halls, Bricks", "200 & 400 Halls", "Library, Student Center", "Library, Student Center", "100 & 300 Halls, Cafeteria Area", "100 & 300 Halls, Cafeteria Area", "500 & 700 Halls, Ramps", "500 & 700 Halls, Ramps", "Front Exterior of School"];
         var sessionID = req.body.id;
         var html = "";
         var sql = "SELECT * FROM sessions WHERE id = ?";
@@ -129,9 +125,7 @@ module.exports = function (dirname) {
                 var attendanceButton = "";
             }
 
-            var buttonHTML = `<div class = "greenButton signup">
-                              Sign up for this session
-                              </div>`;
+            var buttonHTML = "";
             if (currentSignup.attendance == 0) {
                 signupStatus = "You are signed up for this session";
                 buttonHTML = `<div class = "redButton cancel">
@@ -157,11 +151,38 @@ module.exports = function (dirname) {
                 ending = endings[endings.length-1];
             }
             
-			var attendeeHTML = "";
-			for (var i = 0; i < otherSignups.length; i++) {
-				var user = await getUser(Number(otherSignups[i].user_id));
-				attendeeHTML+=`<div class = "attendeeInfo">${i+1}. ${user.name}</div>`;
-			}
+            var attendeeHTML = "";
+            for (var j = 1; j< 11; j++) {
+                var attendee = "";
+			    for (var i = 0; i < otherSignups.length; i++) {
+                    if (otherSignups[i].position == j) {
+                        var user = await getUser(Number(otherSignups[i].user_id));
+                        attendee = `<tr class = "attendeeInfo">
+                                        <td class = "number">${j}</td> 
+                                        <td class = "location">${locations[j-1]}</td>
+                                        <td class = "name">${user.name}</td>
+                                    </tr>`;
+                    }
+                }
+                if (attendee == "") {
+                    if (currentSignup.attendance == undefined) {
+                        var signupButton = `<div class = "greenButton signup" id = ${j}>
+                                            Sign up for this position
+                                            </div>`;
+                    }
+                    else {
+                        var signupButton = `Available`;
+                    }
+
+                    attendee = `<tr class = "attendeeInfo">
+                                        <td class = "number">${j}</td> 
+                                        <td class = "location">${locations[j-1]}</td>
+                                        <td class = "name">${signupButton}</td>
+                                    </tr>`;
+                }
+                attendeeHTML += attendee; 
+            }
+
             html = `
                     <div class = "sessionInfo">
                         <h3>Session Information:</h3>
@@ -180,9 +201,14 @@ module.exports = function (dirname) {
 						</div>
 						<h4 class = "center">Attendees:</h6>
 						<hr />
-						<div class = "attendees">
-							${attendeeHTML}
-						</div>
+                        <table class = "positions">
+                            <tr>
+                                <th>Number</th>
+                                <th>Location</th>
+                                <th>Name</th>
+                            </tr>
+                            ${attendeeHTML}
+                        </table>
                     </div>
 						`;
             res.send({ok: true, html: html});
@@ -344,8 +370,8 @@ module.exports = function (dirname) {
 
     router.post("/sessionSignup", function (req, res) {
 		if (req.session.username){
-			var sql = "INSERT INTO signups (session_id, user_id, attendance) VALUES(?,?,0)";
-			con.query(sql, [req.body.id, req.session.user_id],function (err, result) {
+            var sql = "INSERT INTO signups (session_id, user_id, attendance, position) VALUES(?,?,0,?)";
+			con.query(sql, [req.body.id, req.session.user_id, req.body.position],function (err, result) {
 				if (err) {
 					res.json({ok: false});
 					throw err;
@@ -455,4 +481,8 @@ function getSessionByDate(year, month, day) {
             resolve(result[0]);
         });
     }); 
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
