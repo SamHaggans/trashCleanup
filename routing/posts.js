@@ -148,6 +148,10 @@ module.exports = function (dirname) {
                 signupStatus = "This session was cancelled";
                 buttonHTML = "";
             }
+            if (session.status == 4) {
+                signupStatus = "This session already happened";
+                buttonHTML = "";
+            }
             if (session.day < 5) {
                 ending = endings[session.day-1];
             }
@@ -169,13 +173,16 @@ module.exports = function (dirname) {
                     }
                 }
                 if (attendee == "") {
-                    if (currentSignup.attendance == undefined && session.status != 3) {
+                    if (currentSignup.attendance == undefined && session.status != 3 && session.status !=4) {
                         var signupButton = `<div class = "greenButton signup" id = ${j}>
                                             Sign up for this position
                                             </div>`;
                     }
                     else if (session.status == 3){
                         var signupButton = `Cancelled`;
+                    }
+                    else if (session.status == 4){
+                        var signupButton = `Old Session`;
                     }
                     else {
                         var signupButton = `Available`;

@@ -66,6 +66,10 @@ setInterval(function() {
     createSessions();
 }, 1000*10);
 
+setInterval(function() {
+    manageSessions();
+}, 1000*10);
+
 async function loadPreviousSessions() {
     var first = new Date(2019, 8, 2).getTime();
     var current = new Date().getTime();
@@ -85,6 +89,33 @@ async function loadPreviousSessions() {
         }
         i++;
     }
+}
+async function manageSessions() {
+    var current = new Date();
+    var response = await getSessions();
+    for (var i =0; i< response.length; i++) {
+        var sessionTime = new Date();
+        sessionTime.setFullYear(response[i].year);
+        sessionTime.setMonth(response[i].month);
+        sessionTime.setDate(response[i].day);
+        sessionTime.setHours(23);
+        if (current.getTime() > sessionTime.getTime()) {
+            var sql = "UPDATE sessions SET status = ? WHERE id = ?";
+            await con.query(sql, [4, response[i].id], function(err, result) {
+                if (err) throw err;
+            });
+        }
+    }
+}
+
+async function getSessions() {
+    return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions";
+        con.query(sql, function(err, result) {
+            if (err) throw err;
+            resolve(result);
+        });
+    });
 }
 
 async function createSessions() {
