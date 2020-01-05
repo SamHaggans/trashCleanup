@@ -345,7 +345,7 @@ module.exports = function (dirname) {
 				attendeesWord = "attendee";
             }
             var others = `${otherSignups.length} ${attendeesWord}`;
-            if (session.status == 4) {
+            if (session.status == 3) {
                 others = "Cancelled";
             }
             html += `
