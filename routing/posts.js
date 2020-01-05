@@ -112,8 +112,8 @@ module.exports = function (dirname) {
             if (err) throw err;
             session = session[0];
             var leader = await getUser(Number(session.leader));
-			var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
-			var otherSignups = await getSignupsBySession(session.id);
+			var currentSignup = await (getSignup(session.id, req.session.user_id));
+			var otherSignups = await getSignups(session.id);
             var signupStatus = "You are not currently signed up for this session";
             var currentUser = await getUser(req.session.user_id);
             if (currentUser.admin || req.session.user_id == Number(session.leader)) {
@@ -144,6 +144,10 @@ module.exports = function (dirname) {
                 signupStatus = "This session was cancelled";
                 buttonHTML = "";
             }
+            if (session.status == 3) {
+                signupStatus = "This session was cancelled";
+                buttonHTML = "";
+            }
             if (session.day < 5) {
                 ending = endings[session.day-1];
             }
@@ -165,10 +169,13 @@ module.exports = function (dirname) {
                     }
                 }
                 if (attendee == "") {
-                    if (currentSignup.attendance == undefined) {
+                    if (currentSignup.attendance == undefined && session.status != 3) {
                         var signupButton = `<div class = "greenButton signup" id = ${j}>
                                             Sign up for this position
                                             </div>`;
+                    }
+                    else if (session.status == 3){
+                        var signupButton = `Cancelled`;
                     }
                     else {
                         var signupButton = `Available`;
@@ -245,7 +252,7 @@ module.exports = function (dirname) {
                     var sql = "SELECT * FROM sessions WHERE id = ?";
 					con.query(sql, [result[j].session_id], function (err, sessionResult) {  
 						sessionResult = sessionResult[0];
-						if (err) throw err;
+                        if (err) throw err;
 						thisAttendance = attendanceOptions[result[j].attendance];
 						if (sessionResult.day < 5) {
 							ending = endings[sessionResult.day-1];
@@ -303,9 +310,9 @@ module.exports = function (dirname) {
 			day = newDate.getDate();
 			month = newDate.getMonth();
 			year = newDate.getFullYear();
-			var session = await getSessionByDate(year, month, day);
+			var session = await getSession(year, month, day);
             var leader = await getUser(Number(session.leader));
-            var currentSignup = await (getSignupfromSessionUser(session.id, req.session.user_id));
+            var currentSignup = await (getSignup(session.id, req.session.user_id));
             var signupStatus = "You are not currently signed up for this session";
             if (currentSignup.attendance == 0) {
                 signupStatus = "You are signed up for this session";
@@ -325,7 +332,7 @@ module.exports = function (dirname) {
             else {
                 ending = endings[endings.length-1];
 			}
-			var otherSignups = await getSignupsBySession(session.id);
+			var otherSignups = await getSignups(session.id);
 			var attendeesWord = "attendees";
 			if (otherSignups.length ==1) {
 				attendeesWord = "attendee";
@@ -390,7 +397,7 @@ module.exports = function (dirname) {
     router.post("/getattendance", async function (req, res) {
         var html = "";
         var username;
-        var signups = await getSignupsBySession(req.body.id);
+        var signups = await getSignups(req.body.id);
         for (var i = 0; i < signups.length; i++) {
             var user = await getUser(signups[i].user_id);
             username = user.name;
@@ -401,7 +408,7 @@ module.exports = function (dirname) {
 
     router.post("/takeattendance", async function (req, res) {
         var present = req.body.present;
-        var signups = await getSignupsBySession(req.body.id);
+        var signups = await getSignups(req.body.id);
         for (var i = 0; i < signups.length; i++) {
             if (present.includes(signups[i].user_id)) {
                 await markAttendance(req.body.id, signups[i].user_id, 1);
@@ -426,7 +433,7 @@ function getUser(id) {
     });  
 }
 
-function getSignupfromSessionUser(session_id, user_id) {
+function getSignup(session_id, user_id) {
     return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM signups WHERE session_id = ? AND user_id = ?";
         con.query(sql, [session_id, user_id], function (err, result) {
@@ -453,7 +460,7 @@ function markAttendance(session_id, user_id, attendance) {
     })
 }
 
-function getSignupsBySession(session_id) {
+function getSignups(session_id) {
 	return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM signups WHERE session_id = ?";
         con.query(sql, [session_id], function (err, result) {
@@ -473,7 +480,7 @@ function getSession(id) {
     }); 
 }
 
-function getSessionByDate(year, month, day) {
+function getSession(year, month, day) {
 	return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM sessions WHERE year = ? AND month = ? AND day = ?";
         con.query(sql, [year, month, day], function (err, result) {

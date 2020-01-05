@@ -168,7 +168,7 @@ function getSession(id) {
     }); 
 }
 
-function getSessionByDate(year, month, day) {
+function getSessions(year, month, day) {
 	return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM sessions WHERE year = ? AND month = ? AND day = ?";
         con.query(sql, [year, month, day], function (err, result) {

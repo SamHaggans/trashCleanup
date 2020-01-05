@@ -8,9 +8,9 @@ const config = JSON.parse(fs.readFileSync("./config/config.json", "utf-8"));
 const client_dir = "./public/";
 const partials_dir = "./partials/";
 
-const dirnamey = __dirname;
-const routes = require("./routing/routes.js")(dirnamey);
-const posts = require("./routing/posts.js")(dirnamey);
+const dirname = __dirname;
+const routes = require("./routing/routes.js")(dirname);
+const posts = require("./routing/posts.js")(dirname);
 
 const app = express();
 const port = process.env.PORT || 3006;
@@ -64,7 +64,7 @@ setTimeout(function () {
 
 setInterval(function() {
     createSessions();
-  }, 1000*10);
+}, 1000*10);
 
 async function loadPreviousSessions() {
     var first = new Date(2019, 8, 2).getTime();
