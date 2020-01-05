@@ -343,7 +343,11 @@ module.exports = function (dirname) {
 			var attendeesWord = "attendees";
 			if (otherSignups.length ==1) {
 				attendeesWord = "attendee";
-			}
+            }
+            var others = `${otherSignups.length} ${attendeesWord}`;
+            if (session.status == 4) {
+                others = "Cancelled";
+            }
             html += `
                     <div class = "sessionCard" id = "${session.id}">
                         <h3 class = "sessionDay">${weekdays[newDate.getDay()]}</h3>
@@ -351,7 +355,7 @@ module.exports = function (dirname) {
                             ${months[session.month]} ${session.day}${ending}, ${session.year}
                         </div><br>
                         <div class ="others">
-                            ${otherSignups.length} ${attendeesWord}
+                            ${others}
                         </div><br>
                         <div class = "leader">
                             Leader: ${leader.name}<br>
