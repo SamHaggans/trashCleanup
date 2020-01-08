@@ -6,6 +6,7 @@ $("document").ready(function() {
 			.always(function(response) {
 				if (response.signIn) {
                    $(".alertSpace").html(`<div class = "okAlert">Signed in as ${response.uName}</div>`);
+                   $(".main").html("");
 				   $.get('/headerfile').always(function(response) {
 					$(".header").html(response);
 					});

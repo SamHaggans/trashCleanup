@@ -31,6 +31,7 @@ $("document").ready(function() {
 			.always(function(response) {
                 if (response.ok) {
 				    $(".alertSpace").html(`<div class = "okAlert">Account Created. You can now <a href = '/login'>Log In</a></div>`);
+                    $(".main").html("");
                 }
                 else if (!response.ok && response.error == "valueReuse") {
                     $(".alertSpace").html(`<div class = "badAlert">An account with that email or name already exists. You should <a href = '/login'>Log In</a></div>`);
