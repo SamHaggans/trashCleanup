@@ -224,6 +224,7 @@ module.exports = function (dirname) {
                 signupStatus = "You were absent at this session";
                 buttonHTML = "";
             }
+
             if (session.day < 5) {
                 ending = endings[session.day-1];
             }
@@ -258,6 +259,10 @@ module.exports = function (dirname) {
                     }
                     else {
                         var signupButton = `Available`;
+                    }
+
+                    if (req.session.user_id == Number(session.leader)) {
+                        var signupButton = "You are the leader";
                     }
 
                     attendee = `<tr class = "attendeeInfo">
