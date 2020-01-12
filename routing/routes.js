@@ -61,6 +61,32 @@ module.exports = function(dirname) {
             res.sendFile(client_dir + req.params.id, {root: dirname});
         }
     });
+    
+    router.get('/users/:id', function(req, res) {
+        if (req.params.id == Number(req.params.id)) {
+            if (req.session.admin) {
+                res.sendFile(client_dir + "user.html", {root: dirname});
+            }
+            else {
+                res.sendFile(client_dir + "illegal.html", {root: dirname});
+            }
+        }
+        else if (req.params.id == "header.js" || req.params.id == "header.html"|| req.params.id == "signed-header.html"){
+            res.sendFile(partials_dir + req.params.id, {root: dirname});
+        }
+        else {
+            res.sendFile(client_dir + req.params.id, {root: dirname});
+        }
+    });
+
+    router.get('/users', function(req, res) {
+        if (req.session.admin) {
+            res.sendFile(client_dir + "users.html", {root: dirname});
+        }
+        else {
+            res.sendFile(client_dir + "illegal.html", {root: dirname});
+        }
+    });
 
     router.get("/session/:id/:query", async function(req, res) {
         if (req.params.query == "attendance") {

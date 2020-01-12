@@ -68,7 +68,8 @@ body{
 	margin:0px;
 	padding:0px;
 	border:0px;
-	background-color:lightblue;
+    background-color:lightblue;
+    font-size: 20px;
 }
 
 ul {

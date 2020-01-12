@@ -15,22 +15,94 @@ module.exports = function (dirname) {
 	router.post('/signup', function(req, res) {
         var sql = "SELECT * FROM users WHERE email = ? OR name = ?";
 		con.query(sql, [req.body.email, req.body.name], function (err, result) {
-		  if (err) throw err;
-		  if (result.length===0){
-			var saltVal = masterKey.indexOf(req.body.email[0]) * masterKey.indexOf(req.body.email[1]);
-			var saltLines = fs.readFileSync("./config/salt.txt", "utf-8").split(/\n/g);
-			var salt = saltLines[saltVal];
-			var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
-			var sql = "INSERT INTO users (name,email,pwhash, admin) VALUES (?, ?, ?, 0)";
-			con.query(sql, [req.body.name, req.body.email, derivedKey], function (err, result) {
-              if (err) throw err;
-              res.json({ ok: true });
-			});
-          }
-          else {res.json({ok: false, error: "valueReuse"})}
+            if (err) throw err;
+            if (result.length===0){
+                var saltVal = masterKey.indexOf(req.body.email[0]) * masterKey.indexOf(req.body.email[1]);
+                var saltLines = fs.readFileSync("./config/salt.txt", "utf-8").split(/\n/g);
+                var salt = saltLines[saltVal];
+                var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
+                var sql = "INSERT INTO users (name,email,pwhash, admin) VALUES (?, ?, ?, 0)";
+                con.query(sql, [req.body.name, req.body.email, derivedKey], function (err, result) {
+                if (err) throw err;
+                    res.json({ ok: true });
+                });
+            }
+            else {res.json({ok: false, error: "valueReuse"})}
 		});
 	});
-	  
+      
+    router.post('/changepassword', async function(req, res) {
+        var user = await getUser(req.session.user_id);
+
+        if (user.admin || user.id == req.body.userid) {
+            var changeUser = await getUser(req.body.userid);
+            var saltVal = masterKey.indexOf(changeUser.email[0]) * masterKey.indexOf(changeUser.email[1]);
+            var saltLines = fs.readFileSync("./config/salt.txt", "utf-8").split(/\n/g);
+            var salt = saltLines[saltVal];
+            var derivedKey = pbkdf2.pbkdf2Sync(req.body.pass, salt, 1000000, 64, 'sha512').toString('hex');
+            var sql = 'UPDATE users SET pwhash = ? WHERE id = ?';
+            await con.query(sql, [derivedKey, changeUser.id], function(err, result) {
+                if (err) throw err;
+                res.json({ ok: true });
+            });
+        }
+        else {
+            res.json({ ok: false });
+        }
+    });
+
+    router.post('/getuser', async function (req, res) {
+        var user = await getUser(req.session.user_id);
+        res.json({ok: true, id: user.id});
+    });
+
+    router.post('/accountname', async function (req, res) {
+        var user = await getUser(req.session.user_id);
+        res.json({ok: true, html: `Manage Account: ${user.name}`});
+    });
+
+    router.post('/getusery', async function (req, res) {
+        if (req.session.admin) {
+            var user = await getUser(req.body.id);
+            var html = `
+            <div class = 'center'>
+                ID: ${user.id}<br>
+                Name: ${user.name}<br>
+                Email: <a href = "mailto:${user.email}">${user.email}</a><br>
+                <div class = "greenButton" id = "become">Become User</a>
+            </div>
+            `
+            res.json({ok: true, html: html});
+        }
+    });
+
+    router.post('/getusers', async function (req, res) {
+        if (req.session.admin) {
+            var users = await getUsers();
+            var html="<div class = 'center'>";
+            for (var i =0; i< users.length; i++) {
+                html+=`<br><a href = '/users/${users[i].id}'>${users[i].id} - ${users[i].name}</a>`;
+            }
+            html+="</div>"
+            res.json({ok: true, html: html});
+        }
+    });
+
+    router.post('/becomeuser', async function (req, res) {
+        if (req.session.admin) {
+            var user = await getUser(req.body.id);
+            if (user) {
+                req.session.username = user.name;
+                req.session.user_id = user.id;
+                req.session.admin = user.admin;
+                res.json({ok: true, name: user.name});
+            }
+            else {
+                res.json({ok: false});
+            }
+        }
+    });
+
 	router.post('/login', function(req, res) {
         var sql = "SELECT * FROM users WHERE email = ?";
 		con.query(sql, [req.body.email], function (err, result) {
@@ -470,6 +542,16 @@ function getUser(id) {
         con.query(sql, [id], function (err, result) {
             if (err) throw err;
             resolve(result[0]);
+        });
+    });  
+}
+
+function getUsers() {
+    return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM users";
+        con.query(sql, function (err, result) {
+            if (err) throw err;
+            resolve(result);
         });
     });  
 }
