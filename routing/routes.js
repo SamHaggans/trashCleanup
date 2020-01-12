@@ -64,7 +64,7 @@ module.exports = function(dirname) {
 
     router.get("/session/:id/:query", async function(req, res) {
         if (req.params.query == "attendance") {
-            var leader = await getSession(req.params.id).leader;
+            var leader = await getSessionLeader(req.params.id);
             var user = await getUser(req.session.user_id);
             if (req.session.username) {
                 if (user.admin || leader == req.session.user_id) {
@@ -167,6 +167,17 @@ function getSession(id) {
         });
     }); 
 }
+
+function getSessionLeader(id) {
+	return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions WHERE id = ?";
+        con.query(sql, [id], function (err, result) {
+            if (err) throw err;
+            resolve(result[0].leader);
+        });
+    }); 
+}
+
 
 function getSessions(year, month, day) {
 	return new Promise(function(resolve, reject) {

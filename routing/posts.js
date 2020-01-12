@@ -410,15 +410,20 @@ module.exports = function (dirname) {
         var username;
         var signups = await getSignups(req.body.id);
         for (var i = 0; i < signups.length; i++) {
-            var user = await getUser(signups[i].user_id);
-            username = user.name;
-            html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+            if (signups[i].position != 0) {
+                var user = await getUser(signups[i].user_id);
+                username = user.name;
+                html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+            }
         }
         res.json({ok: true, html: html});
     });
 
     router.post("/takeattendance", async function (req, res) {
         var present = req.body.present;
+        if (present == undefined) {
+            present = [];
+        }
         var signups = await getSignups(req.body.id);
         for (var i = 0; i < signups.length; i++) {
             if (present.includes(signups[i].user_id)) {
@@ -427,6 +432,13 @@ module.exports = function (dirname) {
             else {
                 await markAttendance(req.body.id, signups[i].user_id, 2);
             }
+        }
+        var leader = await getSessionLeader(req.body.id);
+        if (await getSignup(req.body.id, leader) == false) {
+            var sql = "INSERT INTO signups (session_id, user_id, attendance, position) VALUES (?,?,?,?)";
+            await con.query(sql, [req.body.id, leader, 1, 0], function (err, result) {
+                if (err) throw err;
+            });
         }
         res.json({ok: true});
     });
@@ -481,7 +493,7 @@ function getSignups(session_id) {
     });
 }
 
-function getSession(id) {
+function getSessionId(id) {
 	return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM sessions WHERE id = ?";
         con.query(sql, [id], function (err, result) {
@@ -491,6 +503,15 @@ function getSession(id) {
     }); 
 }
 
+function getSessionLeader(id) { 
+    return new Promise(function(resolve, reject) {
+        var sql = "SELECT * FROM sessions WHERE id = ?";
+        con.query(sql, [id], function (err, result) {
+            if (err) throw err;
+            resolve(result[0].leader);
+        });
+    });
+}
 function getSession(year, month, day) {
 	return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM sessions WHERE year = ? AND month = ? AND day = ?";
