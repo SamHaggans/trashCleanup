@@ -339,7 +339,13 @@ module.exports = function (dirname) {
             else {
                 ending = endings[endings.length-1];
 			}
-			var otherSignups = await getSignups(session.id);
+            var signups = await getSignups(session.id);
+            var otherSignups = [];
+            for (var k = 0; k< signups.length; k++) {
+                if (signups[k].position != 0) {
+                    otherSignups.push(signups[k]);
+                }
+            }
 			var attendeesWord = "attendees";
 			if (otherSignups.length ==1) {
 				attendeesWord = "attendee";
@@ -406,41 +412,53 @@ module.exports = function (dirname) {
 		}
     });
     router.post("/getattendance", async function (req, res) {
-        var html = "";
-        var username;
-        var signups = await getSignups(req.body.id);
-        for (var i = 0; i < signups.length; i++) {
-            if (signups[i].position != 0) {
-                var user = await getUser(signups[i].user_id);
-                username = user.name;
-                html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+        
+        var leader = await getSessionLeader(req.body.id);
+        var user = await getUser(req.session.user_id);
+        if (user.admin || leader == user.id) {
+            var html = "";
+            var username;
+            var signups = await getSignups(req.body.id);
+            for (var i = 0; i < signups.length; i++) {
+                if (signups[i].position != 0) {
+                    var user = await getUser(signups[i].user_id);
+                    username = user.name;
+                    html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+                }
             }
+            res.json({ok: true, html: html});
         }
-        res.json({ok: true, html: html});
+        else {res.json({ok: false});}
     });
 
     router.post("/takeattendance", async function (req, res) {
-        var present = req.body.present;
-        if (present == undefined) {
-            present = [];
-        }
-        var signups = await getSignups(req.body.id);
-        for (var i = 0; i < signups.length; i++) {
-            if (present.includes(signups[i].user_id)) {
-                await markAttendance(req.body.id, signups[i].user_id, 1);
-            }
-            else {
-                await markAttendance(req.body.id, signups[i].user_id, 2);
-            }
-        }
         var leader = await getSessionLeader(req.body.id);
-        if (await getSignup(req.body.id, leader) == false) {
-            var sql = "INSERT INTO signups (session_id, user_id, attendance, position) VALUES (?,?,?,?)";
-            await con.query(sql, [req.body.id, leader, 1, 0], function (err, result) {
-                if (err) throw err;
-            });
-        }
-        res.json({ok: true});
+        var user = await getUser(req.session.user_id);
+            if (user.admin || leader == user.id) {
+            var present = req.body.present;
+            if (present == undefined) {
+                present = [];
+            }
+            var signups = await getSignups(req.body.id);
+            for (var i = 0; i < signups.length; i++) {
+                if (present.includes(signups[i].user_id)) {
+                    await markAttendance(req.body.id, signups[i].user_id, 1);
+                }
+                else {
+                    if (signups[i].user_id != leader){
+                        await markAttendance(req.body.id, signups[i].user_id, 2);
+                    }
+                }
+            }
+            var leader = await getSessionLeader(req.body.id);
+            if (await getSignup(req.body.id, leader) == false) {
+                var sql = "INSERT INTO signups (session_id, user_id, attendance, position) VALUES (?,?,?,?)";
+                await con.query(sql, [req.body.id, leader, 1, 0], function (err, result) {
+                    if (err) throw err;
+                });
+            }
+            res.json({ok: true});
+        } else {res.json({ok: false});}
     });
 
 	return router;
