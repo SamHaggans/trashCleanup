@@ -128,22 +128,39 @@ async function createSessions() {
     for (var i = 1; i < 15; i++) {
 		newTime = new Date(current + increment*i);
 		if (newTime.getDay() > 0 && newTime.getDay()<6) {
+            weekday = newTime.getDay();
 			day = newTime.getDate();
 			month = newTime.getMonth();
 			year = newTime.getFullYear();
-			await createSession(year, month, day);
+			await createSession(year, month, day, weekday);
 		}
 	}
 }
 
-function createSession(year, month, day) {
+function createSession(year, month, day, weekday) {
     return new Promise(function(resolve, reject) {
         var sql = "SELECT * FROM sessions WHERE year = ? AND month = ? AND day = ?";
         con.query(sql, [year,month,day], function(err, result) {
             if (err) throw err;
             if (result.length == 0) {
+                var leader;
+                if (weekday == 1) {
+                    leader = 20;
+                }
+                if (weekday == 2) {
+                    leader = 23;
+                }
+                if (weekday == 3) {
+                    leader = 1;
+                }
+                if (weekday == 4) {
+                    leader = 20;
+                }
+                if (weekday == 5) {
+                    leader = 23;
+                }
                 var sql = "INSERT INTO sessions (year, month, day, leader, status) VALUES (?,?,?,?,?)";
-                con.query(sql, [year,month,day,1,0], function (err, result) {
+                con.query(sql, [year,month,day,leader,0], function (err, result) {
                     if (err) throw err;
                     resolve();
                 }); 
