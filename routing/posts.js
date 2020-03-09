@@ -188,7 +188,7 @@ module.exports = function (dirname) {
 			var otherSignups = await getSignups(session.id);
             var signupStatus = "You are not currently signed up for this session";
             var currentUser = await getUser(req.session.user_id);
-            if (currentUser.admin || req.session.user_id == Number(session.leader)|| session.staus != 3) {
+            if (session.status != 3 && (currentUser.admin || req.session.user_id == Number(session.leader))) {
                 var attendanceButton = `<div class = "attendanceButton greenButton" ">
                                             Take Attendance
                                         </div>`;
