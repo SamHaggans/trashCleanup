@@ -500,7 +500,12 @@ module.exports = function (dirname) {
                 if (signups[i].position != 0) {
                     var user = await getUser(signups[i].user_id);
                     username = user.name;
-                    html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+                    if (signups[i].attendance == 1) {
+                        html+= `<div class = "attendee attendeePresent" id = "${user.id}">${username}</div>`;
+                    }
+                    else {
+                        html+= `<div class = "attendee" id = "${user.id}">${username}</div>`;
+                    }
                 }
             }
             res.json({ok: true, html: html});
