@@ -25,7 +25,12 @@ module.exports = function(dirname) {
         else {
             res.sendFile(client_dir + "illegal.html", {root: dirname});
         }
-	});
+    });
+    
+    router.get("/memes/1", function(req, res) {
+        res.sendFile(client_dir + "Communications_Disruption.png", {root: dirname});
+        console.log(req.headers['x-forwarded-for']);
+    })
 
 	router.get("/account", function(req, res) {
 		if (req.session.username) {
