@@ -7,10 +7,10 @@
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"author": "Sam Haggans",
-	"license": "MIT",
+	"license": "",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/SamHaggans/trashCleanUp.git"
+		"url": "https://github.com/SamHaggans/trashCleanup.git"
 	},
 	"homepage": "https://fhstrashcleanup.com",
 	"dependencies": {
